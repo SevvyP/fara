@@ -6,13 +6,7 @@ This is a [Next.js](https://nextjs.org) project that implements the traveling sa
 
 ## Features
 
-- **Interactive Map**: Google Maps integration with location detection
-- **Destination Management**: Search and add multiple destinations to your route
-- **Route Optimization**: Uses traveling salesman algorithm with 2-opt optimization
-- **Visual Route Display**: Shows the optimized route on the map with turn-by-turn directions
-- **Distance & Time Estimates**: Provides total distance and estimated travel time
-
-## Getting Started
+Coming soon!
 
 ### Prerequisites
 
@@ -52,23 +46,6 @@ npm run dev
 ```
 
 Open [http://localhost:3000](http://localhost:3000) with your browser to see the application.
-
-## How to Use
-
-1. **Allow Location Access**: When prompted, allow the application to access your location for the starting point
-2. **Add Destinations**: Use the search input to find and add places you want to visit
-3. **Optimize Route**: Click "Optimize Route" to calculate the most efficient path
-4. **View Results**: See the optimized route displayed on the map with distance and time estimates
-
-## Algorithm
-
-The application uses a combination of algorithms to solve the traveling salesman problem:
-
-1. **Nearest Neighbor Heuristic**: Provides a quick initial solution
-2. **2-opt Optimization**: Improves the initial solution by eliminating route crossings
-3. **Haversine Distance**: Calculates distances between geographical points
-
-While not guaranteed to find the absolute optimal solution for large numbers of destinations, this approach provides very good results quickly for typical use cases (5-20 destinations).
 
 ## Learn More
 
