@@ -11,7 +11,6 @@ export default function GoogleMap() {
     loader
       .importLibrary("maps")
       .then(({ Map }) => {
-        console.log("Map: ", Map);
         const mapElement = document.getElementById("map2") as HTMLElement;
 
         // Check if element exists before creating map

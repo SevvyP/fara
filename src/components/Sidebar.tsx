@@ -27,7 +27,6 @@ export default function Sidebar() {
     try {
       // Placeholder for route optimization logic
       await new Promise((resolve) => setTimeout(resolve, 2000));
-      console.log("Optimizing route for:", locations);
     } catch (error) {
       console.error("Error optimizing route:", error);
     } finally {
