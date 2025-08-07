@@ -2,6 +2,7 @@
 import { useState } from "react";
 
 export default function Sidebar() {
+  const minLocations = 3;
   const [locations, setLocations] = useState<string[]>([]);
   const [newLocation, setNewLocation] = useState("");
   const [isOptimizing, setIsOptimizing] = useState(false);
@@ -18,8 +19,12 @@ export default function Sidebar() {
   };
 
   const handleOptimizeRoute = async () => {
-    if (locations.length < 2) {
-      alert("Please add at least 2 locations to optimize a route.");
+    if (locations.length < minLocations) {
+      alert(
+        "Please add at least " +
+          minLocations +
+          " locations to optimize a route."
+      );
       return;
     }
 
@@ -176,9 +181,9 @@ export default function Sidebar() {
       <div className="border-t border-gray-200 p-6 bg-gray-50">
         <button
           onClick={handleOptimizeRoute}
-          disabled={locations.length < 2 || isOptimizing}
+          disabled={locations.length < minLocations || isOptimizing}
           className={`w-full px-4 py-3 font-medium rounded-md transition-colors border-none ${
-            locations.length < 2 || isOptimizing
+            locations.length < minLocations || isOptimizing
               ? "bg-gray-300 text-white cursor-not-allowed"
               : "bg-green-600 hover:bg-green-700 text-white cursor-pointer"
           }`}
@@ -194,8 +199,8 @@ export default function Sidebar() {
         </button>
 
         <div className="text-center mt-3 text-xs text-gray-500">
-          {locations.length < 2
-            ? "Add at least 2 locations to optimize"
+          {locations.length < minLocations
+            ? "Add at least " + minLocations + " locations to optimize"
             : `Ready to optimize ${locations.length} locations`}
         </div>
       </div>
