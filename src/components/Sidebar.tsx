@@ -14,7 +14,12 @@ interface LocationData {
   placeId?: string;
 }
 
-export default function Sidebar() {
+interface SidebarProps {
+  isOpen?: boolean;
+  onClose?: () => void;
+}
+
+export default function Sidebar({ isOpen, onClose }: SidebarProps) {
   const minLocations = 3;
   const [locations, setLocations] = useState<LocationData[]>([]);
   const [newLocation, setNewLocation] = useState("");
