@@ -17,11 +17,12 @@ interface LocationData {
 interface SidebarProps {
   isOpen?: boolean;
   onClose?: () => void;
+  locations: LocationData[];
+  setLocations: (locations: LocationData[]) => void;
 }
 
-export default function Sidebar({ isOpen, onClose }: SidebarProps) {
+export default function Sidebar({ locations, setLocations }: SidebarProps) {
   const minLocations = 3;
-  const [locations, setLocations] = useState<LocationData[]>([]);
   const [newLocation, setNewLocation] = useState("");
   const [selectedPlace, setSelectedPlace] =
     useState<google.maps.places.PlaceResult | null>(null);

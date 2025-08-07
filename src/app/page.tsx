@@ -4,8 +4,21 @@ import GoogleMap from "../components/GoogleMap";
 import TitleBar from "../components/TitleBar";
 import Sidebar from "../components/Sidebar";
 
+// Define a type for location data
+interface LocationData {
+  id: string;
+  name?: string;
+  address: string;
+  coordinates?: {
+    lat: number;
+    lng: number;
+  };
+  placeId?: string;
+}
+
 export default function Home() {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const [locations, setLocations] = useState<LocationData[]>([]);
 
   return (
     <div className="h-screen flex flex-col bg-gray-100">
@@ -37,6 +50,8 @@ export default function Home() {
           <Sidebar
             isOpen={isSidebarOpen}
             onClose={() => setIsSidebarOpen(false)}
+            locations={locations}
+            setLocations={setLocations}
           />
         </div>
 
@@ -50,7 +65,7 @@ export default function Home() {
 
         {/* Map Area - Responsive */}
         <div className="w-full lg:w-[70%] relative">
-          <GoogleMap />
+          <GoogleMap locations={locations} />
         </div>
       </div>
     </div>
