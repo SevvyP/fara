@@ -1,35 +1,135 @@
 "use client";
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
+import { getGoogleMapsLoader } from "../utils/googleMapsLoader";
+import { randomUUID } from "crypto";
+
+// Define a type for location data
+interface LocationData {
+  id: string;
+  name?: string;
+  address: string;
+  coordinates?: {
+    lat: number;
+    lng: number;
+  };
+  placeId?: string;
+}
 
 export default function Sidebar() {
   const minLocations = 3;
-  const [locations, setLocations] = useState<string[]>([]);
+  const [locations, setLocations] = useState<LocationData[]>([]);
   const [newLocation, setNewLocation] = useState("");
+  const [selectedPlace, setSelectedPlace] =
+    useState<google.maps.places.PlaceResult | null>(null);
   const [isOptimizing, setIsOptimizing] = useState(false);
+  const autocompleteRef = useRef<HTMLInputElement>(null);
+  const autocompleteInstance = useRef<google.maps.places.Autocomplete | null>(
+    null
+  );
+
+  useEffect(() => {
+    const initializeAutocomplete = async () => {
+      try {
+        const loader = getGoogleMapsLoader();
+
+        // Use importLibrary instead of deprecated load()
+        await loader.importLibrary("places");
+
+        if (autocompleteRef.current && window.google) {
+          autocompleteInstance.current =
+            new window.google.maps.places.Autocomplete(
+              autocompleteRef.current,
+              {
+                types: ["establishment", "geocode"],
+                fields: [
+                  "place_id",
+                  "formatted_address",
+                  "name",
+                  "geometry",
+                  "types",
+                  "vicinity",
+                ],
+              }
+            );
+
+          autocompleteInstance.current.addListener("place_changed", () => {
+            const place = autocompleteInstance.current?.getPlace();
+            if (place && place.formatted_address) {
+              setNewLocation(place.formatted_address);
+              setSelectedPlace(place);
+            }
+          });
+        }
+      } catch (error) {
+        console.error("Error loading Google Maps:", error);
+      }
+    };
+
+    initializeAutocomplete();
+
+    return () => {
+      if (autocompleteInstance.current) {
+        window.google?.maps?.event?.clearInstanceListeners(
+          autocompleteInstance.current
+        );
+      }
+    };
+  }, []);
 
   const addLocation = () => {
-    if (newLocation.trim() && !locations.includes(newLocation.trim())) {
-      setLocations([...locations, newLocation.trim()]);
-      setNewLocation("");
+    if (newLocation.trim()) {
+      const locationData: LocationData = {
+        id: crypto.randomUUID(),
+        address: newLocation.trim(),
+        name: selectedPlace?.name,
+        coordinates: selectedPlace?.geometry?.location
+          ? {
+              lat: selectedPlace.geometry.location.lat(),
+              lng: selectedPlace.geometry.location.lng(),
+            }
+          : undefined,
+        placeId: selectedPlace?.place_id,
+      };
+
+      // Check if location already exists (by address or place_id)
+      const exists = locations.some(
+        (loc) =>
+          loc.address === locationData.address ||
+          (loc.placeId &&
+            locationData.placeId &&
+            loc.placeId === locationData.placeId)
+      );
+
+      if (!exists) {
+        setLocations([...locations, locationData]);
+        setNewLocation("");
+        setSelectedPlace(null);
+        if (autocompleteRef.current) {
+          autocompleteRef.current.value = "";
+        }
+      }
     }
   };
 
-  const removeLocation = (index: number) => {
-    setLocations(locations.filter((_, i) => i !== index));
+  const removeLocation = (id: string) => {
+    setLocations(locations.filter((loc) => loc.id !== id));
   };
 
   const handleOptimizeRoute = async () => {
     if (locations.length < minLocations) {
       alert(
-        "Please add at least " +
-          minLocations +
-          " locations to optimize a route."
+        `Please add at least ${minLocations} locations to optimize a route.`
       );
       return;
     }
 
     setIsOptimizing(true);
     try {
+      // Now you have coordinates available for route optimization
+      const coordinatesForOptimization = locations
+        .filter((loc) => loc.coordinates)
+        .map((loc) => loc.coordinates!);
+
       // Placeholder for route optimization logic
       await new Promise((resolve) => setTimeout(resolve, 2000));
     } catch (error) {
@@ -74,6 +174,7 @@ export default function Sidebar() {
         </label>
         <div className="flex gap-2">
           <input
+            ref={autocompleteRef}
             type="text"
             value={newLocation}
             onChange={(e) => setNewLocation(e.target.value)}
@@ -140,20 +241,37 @@ export default function Sidebar() {
             <div className="flex flex-col gap-2">
               {locations.map((location, index) => (
                 <div
-                  key={index}
+                  key={location.id}
                   className="flex items-center justify-between p-3 bg-gray-50 rounded-lg border border-gray-200"
                 >
-                  <div className="flex items-center gap-3">
-                    <div className="w-6 h-6 bg-blue-100 rounded-full flex items-center justify-center text-blue-600 text-xs font-medium">
+                  <div className="flex items-center gap-3 flex-1">
+                    <div className="w-6 h-6 bg-blue-100 rounded-full flex items-center justify-center text-blue-600 text-xs font-medium flex-shrink-0">
                       {index + 1}
                     </div>
-                    <span className="text-sm text-gray-800 truncate">
-                      {location}
-                    </span>
+                    <div className="flex flex-col gap-1 min-w-0 flex-1">
+                      {location.name && (
+                        <span className="text-sm font-medium text-gray-900 truncate">
+                          {location.name}
+                        </span>
+                      )}
+                      <span
+                        className={`text-xs ${
+                          location.name ? "text-gray-500" : "text-gray-800"
+                        } truncate`}
+                      >
+                        {location.address}
+                      </span>
+                      {location.coordinates && (
+                        <span className="text-xs text-green-600">
+                          📍 {location.coordinates.lat.toFixed(4)},{" "}
+                          {location.coordinates.lng.toFixed(4)}
+                        </span>
+                      )}
+                    </div>
                   </div>
                   <button
-                    onClick={() => removeLocation(index)}
-                    className="text-gray-400 hover:text-red-500 bg-transparent border-none p-1 cursor-pointer transition-colors"
+                    onClick={() => removeLocation(location.id)}
+                    className="text-gray-400 hover:text-red-500 bg-transparent border-none p-1 cursor-pointer transition-colors flex-shrink-0"
                   >
                     <svg
                       className="w-4 h-4"
@@ -200,7 +318,7 @@ export default function Sidebar() {
 
         <div className="text-center mt-3 text-xs text-gray-500">
           {locations.length < minLocations
-            ? "Add at least " + minLocations + " locations to optimize"
+            ? `Add at least ${minLocations} locations to optimize`
             : `Ready to optimize ${locations.length} locations`}
         </div>
       </div>
