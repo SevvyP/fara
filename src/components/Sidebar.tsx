@@ -1,7 +1,6 @@
 "use client";
 import { useState, useRef, useEffect } from "react";
 import { getGoogleMapsLoader } from "../utils/googleMapsLoader";
-import { randomUUID } from "crypto";
 
 // Define a type for location data
 interface LocationData {
@@ -22,6 +21,7 @@ export default function Sidebar() {
   const [selectedPlace, setSelectedPlace] =
     useState<google.maps.places.PlaceResult | null>(null);
   const [isOptimizing, setIsOptimizing] = useState(false);
+  const [hasValidSelection, setHasValidSelection] = useState(false);
   const autocompleteRef = useRef<HTMLInputElement>(null);
   const autocompleteInstance = useRef<google.maps.places.Autocomplete | null>(
     null
@@ -54,9 +54,10 @@ export default function Sidebar() {
 
           autocompleteInstance.current.addListener("place_changed", () => {
             const place = autocompleteInstance.current?.getPlace();
-            if (place && place.formatted_address) {
+            if (place && place.formatted_address && place.place_id) {
               setNewLocation(place.formatted_address);
               setSelectedPlace(place);
+              setHasValidSelection(true);
             }
           });
         }
@@ -77,7 +78,7 @@ export default function Sidebar() {
   }, []);
 
   const addLocation = () => {
-    if (newLocation.trim()) {
+    if (newLocation.trim() && hasValidSelection && selectedPlace) {
       const locationData: LocationData = {
         id: crypto.randomUUID(),
         address: newLocation.trim(),
@@ -104,6 +105,7 @@ export default function Sidebar() {
         setLocations([...locations, locationData]);
         setNewLocation("");
         setSelectedPlace(null);
+        setHasValidSelection(false);
         if (autocompleteRef.current) {
           autocompleteRef.current.value = "";
         }
@@ -177,18 +179,30 @@ export default function Sidebar() {
             ref={autocompleteRef}
             type="text"
             value={newLocation}
-            onChange={(e) => setNewLocation(e.target.value)}
-            onKeyDown={(e) => e.key === "Enter" && addLocation()}
+            onChange={(e) => {
+              setNewLocation(e.target.value);
+              setHasValidSelection(false); // Reset valid selection when typing
+            }}
             placeholder="Enter address or place name"
             className="flex-1 px-3 py-2 border border-gray-300 rounded-md text-sm shadow-sm outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
           />
           <button
             onClick={addLocation}
-            className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium rounded-md transition-colors cursor-pointer border-none"
+            disabled={!hasValidSelection}
+            className={`px-4 py-2 text-sm font-medium rounded-md transition-colors border-none ${
+              hasValidSelection
+                ? "bg-blue-600 hover:bg-blue-700 text-white cursor-pointer"
+                : "bg-gray-300 text-gray-500 cursor-not-allowed"
+            }`}
           >
             Add
           </button>
         </div>
+        {newLocation && !hasValidSelection && (
+          <p className="text-xs text-gray-500 mt-2">
+            Please select an option from the dropdown
+          </p>
+        )}
       </div>
 
       {/* Locations List */}
