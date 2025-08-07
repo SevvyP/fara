@@ -256,27 +256,27 @@ export default function Sidebar() {
               {locations.map((location, index) => (
                 <div
                   key={location.id}
-                  className="flex items-center justify-between p-3 bg-gray-50 rounded-lg border border-gray-200"
+                  className="flex items-center justify-between p-3 bg-gray-50 rounded-lg border border-gray-200 min-w-0"
                 >
-                  <div className="flex items-center gap-3 flex-1">
+                  <div className="flex items-center gap-3 flex-1 min-w-0 overflow-hidden">
                     <div className="w-6 h-6 bg-blue-100 rounded-full flex items-center justify-center text-blue-600 text-xs font-medium flex-shrink-0">
                       {index + 1}
                     </div>
-                    <div className="flex flex-col gap-1 min-w-0 flex-1">
+                    <div className="flex flex-col gap-1 min-w-0 flex-1 overflow-hidden">
                       {location.name && (
-                        <span className="text-sm font-medium text-gray-900 truncate">
+                        <span className="text-sm font-medium text-gray-900 truncate block">
                           {location.name}
                         </span>
                       )}
                       <span
                         className={`text-xs ${
                           location.name ? "text-gray-500" : "text-gray-800"
-                        } truncate`}
+                        } truncate block`}
                       >
                         {location.address}
                       </span>
                       {location.coordinates && (
-                        <span className="text-xs text-green-600">
+                        <span className="text-xs text-green-600 truncate block">
                           📍 {location.coordinates.lat.toFixed(4)},{" "}
                           {location.coordinates.lng.toFixed(4)}
                         </span>
@@ -285,7 +285,7 @@ export default function Sidebar() {
                   </div>
                   <button
                     onClick={() => removeLocation(location.id)}
-                    className="text-gray-400 hover:text-red-500 bg-transparent border-none p-1 cursor-pointer transition-colors flex-shrink-0"
+                    className="text-gray-400 hover:text-red-500 bg-transparent border-none p-1 cursor-pointer transition-colors flex-shrink-0 ml-2"
                   >
                     <svg
                       className="w-4 h-4"
